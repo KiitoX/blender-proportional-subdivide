@@ -1,2 +1,2 @@
-# blender-proportional-split
-Blender add-on to help split edges with mathematical precision
+# Proportional Subdivide
+Blender add-on to help subdivide edges with mathematical precision
