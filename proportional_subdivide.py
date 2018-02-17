@@ -52,7 +52,7 @@ modify_type_items = {
 
 
 class ModifyProportion(bpy.types.Operator):
-    bl_idname = 'mesh.split_proportional_modify'
+    bl_idname = 'mesh.subdivide_proportional_modify'
     bl_label = ''
     bl_options = {'UNDO'}
 
@@ -62,7 +62,7 @@ class ModifyProportion(bpy.types.Operator):
     )
     
     def invoke(self, context, event):
-        ts = context.scene.split_proportional_settings
+        ts = context.scene.subdivide_proportional_settings
         if self.type == 'ADD':
             ts.props.add()
             if ts.active_index < 0:
@@ -84,22 +84,22 @@ class ModifyProportion(bpy.types.Operator):
         return {'FINISHED'}
 
 
-class SplitProportional(bpy.types.Operator):
-    bl_idname = 'mesh.split_proportional'
-    bl_label = 'Proportional Split'
-    bl_description = 'Splits selected edges by the common factor \'a\'.'
+class SubdivideProportional(bpy.types.Operator):
+    bl_idname = 'mesh.subdivide_proportional'
+    bl_label = 'Proportional Subdivide'
+    bl_description = 'Subdivide selected edges by the common factor \'a\'.'
     bl_options = {'UNDO', 'REGISTER'}
 
     @classmethod
     def poll(cls, context):
-        ts = context.scene.split_proportional_settings
+        ts = context.scene.subdivide_proportional_settings
         return len(ts.props) > 0
 
     def invoke(self, context, event):
         return self.execute(context)
     
     def execute(self, context):
-        ts = context.scene.split_proportional_settings
+        ts = context.scene.subdivide_proportional_settings
         
         # update mesh data (..?)
         bpy.ops.object.mode_set(mode='OBJECT')
@@ -112,7 +112,7 @@ class SplitProportional(bpy.types.Operator):
         for edge in selectedEdges:
             vert1, vert2 = reversed(edge.verts) if ts.reverse else edge.verts
             functions = list(s.value for s in ts.props)
-            proportions = SplitProportional.get_proportions(functions)
+            proportions = SubdivideProportional.get_proportions(functions)
             while proportions:
                 prop = proportions[0]
                 psum = sum(proportions)
@@ -142,39 +142,39 @@ class SplitProportional(bpy.types.Operator):
 
 
 def render_panel(self, context):
-    ts = context.scene.split_proportional_settings
+    ts = context.scene.subdivide_proportional_settings
     layout = self.layout
     
     col = layout.column(align=True)
-    col.label(text='Proportional Split:')
+    col.label(text='Proportional Subdivide:')
     
     row = col.row()
     sub = row.column()
     sub.template_list('TOOLS_UL_props', '', ts, 'props', ts, 'active_index', rows=3, maxrows=5)
     
     sub = row.column(align=True)
-    sub.operator('mesh.split_proportional_modify',
+    sub.operator('mesh.subdivide_proportional_modify',
                     text=modify_type_items['ADD']['name'],
                     icon=modify_type_items['ADD']['icon']).type = 'ADD'
     if len(ts.props) > 0:
-        sub.operator('mesh.split_proportional_modify',
+        sub.operator('mesh.subdivide_proportional_modify',
                     text=modify_type_items['REMOVE']['name'],
                     icon=modify_type_items['REMOVE']['icon']).type = 'REMOVE'
-        sub.operator('mesh.split_proportional_modify',
+        sub.operator('mesh.subdivide_proportional_modify',
                     text=modify_type_items['CLEAR']['name'],
                     icon=modify_type_items['CLEAR']['icon']).type = 'CLEAR'
     if len(ts.props) > 1:
         sub.separator()
-        sub.operator('mesh.split_proportional_modify',
+        sub.operator('mesh.subdivide_proportional_modify',
                     text=modify_type_items['UP']['name'],
                     icon=modify_type_items['UP']['icon']).type = 'UP'
-        sub.operator('mesh.split_proportional_modify',
+        sub.operator('mesh.subdivide_proportional_modify',
                     text=modify_type_items['DOWN']['name'],
                     icon=modify_type_items['DOWN']['icon']).type = 'DOWN'
     
     col.separator()
     spl = col.split(percentage=0.7, align=True)
-    spl.operator('mesh.split_proportional')
+    spl.operator('mesh.subdivide_proportional')
     spl.prop(ts, 'reverse', toggle=True)
 
 
@@ -184,10 +184,10 @@ def register():
     bpy.utils.register_class(ProportionItem)
     bpy.utils.register_class(ProportionSettings)
     
-    bpy.types.Scene.split_proportional_settings = bpy.props.PointerProperty(type=ProportionSettings)
+    bpy.types.Scene.subdivide_proportional_settings = bpy.props.PointerProperty(type=ProportionSettings)
     
     bpy.utils.register_class(ModifyProportion)
-    bpy.utils.register_class(SplitProportional)
+    bpy.utils.register_class(SubdivideProportional)
     
     bpy.types.VIEW3D_PT_tools_meshedit.append(render_panel)
 
@@ -198,9 +198,9 @@ def unregister():
     bpy.utils.unregister_class(ProportionItem)
     bpy.utils.unregister_class(ProportionSettings)
     
-    del bpy.types.Scene.split_proportional_settings
+    del bpy.types.Scene.subdivide_proportional_settings
     
     bpy.utils.unregister_class(ModifyProportion)
-    bpy.utils.unregister_class(SplitProportional)
+    bpy.utils.unregister_class(SubdivideProportional)
     
     bpy.types.VIEW3D_PT_tools_meshedit.remove(render_panel)
